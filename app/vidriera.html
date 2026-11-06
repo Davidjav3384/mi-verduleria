@@ -71,103 +71,121 @@
             { id: 4, nombre: "Zapallo", precio: 1700, stock: 10 }
         ];
 
-        // =========================================================================
-        // 2. ACCESO AL DOM (HTML): Captura de las referencias únicas usando selectores por ID (#)
-        // =========================================================================
-        const botonEncargar = document.querySelector('#btn-encargar');
-        const mensajeEstado = document.querySelector('#mensaje-estado');
-        const listaProductos = document.querySelector('#lista-productos');
-        const contenedorTabla = document.querySelector('#contenedor-tabla');
+       // =========================================================================
+// 2. CAPTURA DE ELEMENTOS DEL DOM: Referencias a las etiquetas HTML
+// =========================================================================
+const botonEncargar = document.querySelector('#btn-encargar');
+const mensajeEstado = document.querySelector('#mensaje-estado');
+const listaProductos = document.querySelector('#lista-productos');
+const contenedorTabla = document.querySelector('#contenedor-tabla');
+const inputBusqueda = document.querySelector('#busqueda'); // ← El buscador
 
-        // =========================================================================
-        // 3. EVENTO INTERACTIVO: Captura el clic del usuario para cambiar el mensaje de la orden
-        // =========================================================================
-        botonEncargar.addEventListener('click', () => {
-            mensajeEstado.textContent = "¡Pedido encargado con éxito! 🎉";
-        });
+// =========================================================================
+// 3. EVENTO INTERACTIVO: Cambia el mensaje al hacer clic en Encargar
+// =========================================================================
+botonEncargar.addEventListener('click', () => {
+    mensajeEstado.textContent = "¡Pedido encargado con éxito! 🎉";
+});
 
-        // =========================================================================
-        // 4. COMPONENTE REUTILIZABLE 1: Función constructora de tarjetas para la vidriera
-        // =========================================================================
-        function tarjeta(p) {
-            let componenteBoton = "";
+// =========================================================================
+// 4. COMPONENTE 1: Generador de tarjetas individuales
+// =========================================================================
+function tarjeta(p) {
+    let componenteBoton = "";
 
-            // Regla de negocio en base al stock: define si muestra el botón de compra o aviso en rojo
-            if (p.stock === 0) {
-                componenteBoton = `<span class="text-red-600 font-bold block text-center py-2 bg-red-50 rounded-lg border border-red-200">Sin stock</span>`;
-            } else {
-                componenteBoton = `
-                    <button class="bg-green-700 text-white hover:bg-green-600 font-bold py-2 px-6 rounded-lg transition-colors duration-200 shadow-md flex justify-center w-full items-center cursor-pointer">
-                        Comprar
-                    </button>
-                `;
-            }
+    if (p.stock === 0) {
+        componenteBoton = `<span class="text-red-600 font-bold block text-center py-2 bg-red-50 rounded-lg border border-red-200">Sin stock</span>`;
+    } else {
+        componenteBoton = `
+            <button class="bg-green-700 text-white hover:bg-green-600 font-bold py-2 px-6 rounded-lg transition-colors duration-200 shadow-md flex justify-center w-full items-center cursor-pointer">
+                Comprar
+            </button>
+        `;
+    }
 
-            // Retorna la cadena de texto con la estructura HTML inyectando dinámicamente los valores
-            return `
-                <div class="bg-white p-4 rounded-xl border flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
-                    <div class="flex justify-between font-bold mb-4">
-                        <span class="text-lg">${p.nombre}</span>
-                        <span class="text-green-700">$${p.precio.toLocaleString('es-AR')}</span>
-                    </div>
-                    ${componenteBoton}
-                </div>
-            `;
-        }
+    return `
+        <div class="bg-white p-4 rounded-xl border flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex justify-between font-bold mb-4">
+                <span class="text-lg">${p.nombre}</span>
+                <span class="text-green-700">$${p.precio.toLocaleString('es-AR')}</span>
+            </div>
+            ${componenteBoton}
+        </div>
+    `;
+}
 
-        // =========================================================================
-        // 5. COMPONENTE REUTILIZABLE 2: Función modular encargada de fabricar la tabla de inventario
-        // =========================================================================
-        function tablaStock(listaProductos) {
-            let filas = ""; // Variable acumuladora de filas de texto HTML
-            
-            // Ciclo iterador for...of: recorre el array recibido fila por fila
-            for (const p of listaProductos) {
-                // Lógica condicional interna para cambiar estilos y textos según disponibilidad en la tabla
-                const claseStock = p.stock === 0 ? "text-red-600 font-bold" : "text-gray-600 font-medium";
-                const textoStock = p.stock === 0 ? "Sin stock" : `${p.stock} kg`;
+// =========================================================================
+// 5. COMPONENTE 2: Generador de la tabla de stock
+// =========================================================================
+function tablaStock(listaProductos) {
+    let filas = "";
+    
+    for (const p of listaProductos) {
+        const claseStock = p.stock === 0 ? "text-red-600 font-bold" : "text-gray-600 font-medium";
+        const textoStock = p.stock === 0 ? "Sin stock" : `${p.stock} kg`;
 
-                // Suma progresiva de hilos de texto con las celdas alineadas horizontalmente
-                filas += `
-                    <tr class="border-b border-gray-100 last:border-none hover:bg-gray-50/50 transition-colors">
-                        <td class="p-3 text-gray-400 font-medium">#${p.id}</td>
-                        <td class="p-3 font-semibold text-gray-800">${p.nombre}</td>
-                        <td class="p-3 font-medium text-gray-600">$${p.precio.toLocaleString('es-AR')}</td>
-                        <td class="p-3 ${claseStock}">${textoStock}</td>
+        filas += `
+            <tr class="border-b border-gray-100 last:border-none hover:bg-gray-50/50 transition-colors">
+                <td class="p-3 text-gray-400 font-medium">#${p.id}</td>
+                <td class="p-3 font-semibold text-gray-800">${p.nombre}</td>
+                <td class="p-3 font-medium text-gray-600">$${p.precio.toLocaleString('es-AR')}</td>
+                <td class="p-3 ${claseStock}">${textoStock}</td>
+            </tr>
+        `;
+    }
+
+    return `
+        <div class="w-full bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <table class="w-full border-collapse text-left text-sm">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-200 text-gray-600 font-bold uppercase text-xs tracking-wider">
+                        <th class="p-3 w-16">ID</th>
+                        <th class="p-3">Producto</th>
+                        <th class="p-3">Precio</th>
+                        <th class="p-3">Stock Disponible</th>
                     </tr>
-                `;
-            }
+                </thead>
+                <tbody>
+                    ${filas}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
 
-            // Retorna el cascarón de la estructura de la tabla inyectando las filas generadas por el ciclo
-            return `
-                <div class="w-full bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                    <table class="w-full border-collapse text-left text-sm">
-                        <thead>
-                            <tr class="bg-gray-50 border-b border-gray-200 text-gray-600 font-bold uppercase text-xs tracking-wider">
-                                <th class="p-3 w-16">ID</th>
-                                <th class="p-3">Producto</th>
-                                <th class="p-3">Precio</th>
-                                <th class="p-3">Stock Disponible</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${filas}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        }
+// =========================================================================
+// 6. FUNCIÓN CENTRAL DE RENDERIZADO: Borra la pantalla y dibuja la lista que reciba
+// =========================================================================
+function renderizarTodo(lista) {
+    // Limpiamos los contenedores para que no se acumulen las búsquedas viejas
+    listaProductos.innerHTML = "";
+    contenedorTabla.innerHTML = "";
 
-        // =========================================================================
-        // 6. CONTROLADORES DE INYECCIÓN (CONEXIÓN AL DOM)
-        // =========================================================================
-        
-        // Ejecuta el motor de renderizado de tarjetas en una sola línea de código
-        for (const producto of productos) listaProductos.innerHTML += tarjeta(producto);
+    // Inyectamos las tarjetas usando tu ciclo de una línea
+    for (const producto of lista) listaProductos.innerHTML += tarjeta(producto);
 
-        // Invoca el componente de tabla de stock pasándole el array de productos y escribe el resultado
-        contenedorTabla.innerHTML = tablaStock(productos);
+    // Inyectamos la tabla
+    contenedorTabla.innerHTML = tablaStock(lista);
+}
 
+// Renderizado inicial: Cuando abre la página por primera vez, muestra todos los productos
+renderizarTodo(productos);
+
+// =========================================================================
+// 7. LÓGICA DEL BUSCADOR: Filtra en tiempo real mientras el usuario escribe
+// =========================================================================
+inputBusqueda.addEventListener('input', (evento) => {
+    // Guardamos el texto ingresado pasado a minúsculas
+    const textoUsuario = evento.target.value.toLowerCase();
+
+    // Filtramos el array basándonos en si el nombre incluye el texto escrito
+    const productosFiltrados = productos.filter(producto => {
+        return producto.nombre.toLowerCase().includes(textoUsuario);
+    });
+
+    // Volvemos a renderizar la pantalla pero pasándole ÚNICAMENTE la sublista filtrada
+    renderizarTodo(productosFiltrados);
+});
     </script>
 </body>
 </html>
