@@ -16,7 +16,7 @@
     <!-- ENCABEZADO: Bloque superior verde con sombra, bordes suavizados y texto blanco -->
     <header class="bg-green-700 p-6 text-white rounded-xl mb-6 text-center shadow-md">
         <h1 class="text-2xl font-bold">Verduleria "Don David"</h1>
-        <p class="text-sm text-green-100 mt-1">La Verduleria de los Precios Frescos</p>
+        <p class="text-sm text-green-100 mt-1">La Verduleria de los Precios Frescos - Estamos en Av. 9 de julio 4885 de lunes a domingos de 8.00 hrs. a 20.00 hrs</p>
     </header>
 
     <!-- BUSCADOR: Barra de texto blanca que ocupa el 100% de ancho con bordes redondeados -->
@@ -62,14 +62,17 @@
         // =========================================================================
         // 1. FUENTE DE DATOS PRINCIPAL: Array centralizado con las propiedades de los productos
         // =========================================================================
-        const productos = [
-            { id: 1, nombre: "Papa", precio: 2000, stock: 30 },
-            { id: 2, nombre: "Cebolla", precio: 2500, stock: 0 }, // Cebolla configurada en 0 para evaluar el "Sin stock"
-            { id: 3, nombre: "Tomate", precio: 2500, stock: 20 },
-            { id: 4, nombre: "Lechuga", precio: 3500, stock: 10 },
-            { id: 4, nombre: "Palta", precio: 6500, stock: 10 },
-            { id: 4, nombre: "Zapallo", precio: 1700, stock: 10 }
-        ];
+        // =========================================================================
+// 1. FUENTE DE DATOS PRINCIPAL: Agregamos la propiedad 'cantidad' inicializada en 1
+// =========================================================================
+const productos = [
+    { id: 1, nombre: "Papa", precio: 2000, stock: 30, cantidad: 1 },
+    { id: 2, nombre: "Cebolla", precio: 2500, stock: 0, cantidad: 1 }, 
+    { id: 3, nombre: "Tomate", precio: 2500, stock: 20, cantidad: 1 },
+    { id: 4, nombre: "Lechuga", precio: 3500, stock: 10, cantidad: 1 },
+    { id: 5, nombre: "Palta", precio: 6500, stock: 10, cantidad: 1 },
+    { id: 6, nombre: "Zapallo", precio: 1700, stock: 10, cantidad: 1 }
+];
 
        // =========================================================================
 // 2. CAPTURA DE ELEMENTOS DEL DOM: Referencias a las etiquetas HTML
@@ -88,7 +91,7 @@ botonEncargar.addEventListener('click', () => {
 });
 
 // =========================================================================
-// 4. COMPONENTE 1: Generador de tarjetas individuales
+// 4. COMPONENTE 1: Tarjeta con los botones del contador y el total calculado
 // =========================================================================
 function tarjeta(p) {
     let componenteBoton = "";
@@ -96,7 +99,22 @@ function tarjeta(p) {
     if (p.stock === 0) {
         componenteBoton = `<span class="text-red-600 font-bold block text-center py-2 bg-red-50 rounded-lg border border-red-200">Sin stock</span>`;
     } else {
+        // Multiplicamos kilos actuales por el precio para tener el total antes de confirmar
+        const totalParcial = p.precio * p.cantidad;
+
         componenteBoton = `
+            <!-- Contador de la Lección 3 integrado (id único pasado por parámetro) -->
+            <div class="flex items-center justify-center gap-3 bg-gray-50 p-2 rounded-lg border mb-3">
+                <button onclick="cambiarKilos(${p.id}, -1)" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded font-bold transition-colors cursor-pointer">-</button>
+                <p class="font-medium text-sm"><span>${p.cantidad}</span> kg</p>
+                <button onclick="cambiarKilos(${p.id}, 1)" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded font-bold transition-colors cursor-pointer">+</button>
+            </div>
+            
+            <!-- TOTAL DEL ENCARGO: Visible antes de confirmar -->
+            <p class="text-sm font-medium text-gray-500 text-center mb-3">
+                Total: <span class="font-bold text-gray-900">$${totalParcial.toLocaleString('es-AR')}</span>
+            </p>
+
             <button class="bg-green-700 text-white hover:bg-green-600 font-bold py-2 px-6 rounded-lg transition-colors duration-200 shadow-md flex justify-center w-full items-center cursor-pointer">
                 Comprar
             </button>
@@ -113,7 +131,6 @@ function tarjeta(p) {
         </div>
     `;
 }
-
 // =========================================================================
 // 5. COMPONENTE 2: Generador de la tabla de stock
 // =========================================================================
@@ -186,6 +203,33 @@ inputBusqueda.addEventListener('input', (evento) => {
     // Volvemos a renderizar la pantalla pero pasándole ÚNICAMENTE la sublista filtrada
     renderizarTodo(productosFiltrados);
 });
+
+// =========================================================================
+// 8. NUEVA FUNCIÓN: Controlador global inteligente de kilos y multiplicación
+// =========================================================================
+function cambiarKilos(id, operacion) {
+    // Buscamos cuál producto del array recibió el clic
+    const prod = productos.find(p => p.id === id);
+    
+    if (prod) {
+        // Sumamos o restamos alterando los kilos en la memoria (Límites 1 a 5)
+        if (operacion === 1 && prod.cantidad < 5) {
+            prod.cantidad++;
+        } else if (operacion === -1 && prod.cantidad > 1) {
+            prod.cantidad--;
+        }
+        
+        // Conservamos el filtro del buscador por si el usuario está escribiendo
+        const textoUsuario = inputBusqueda.value.toLowerCase();
+        const productosFiltrados = productos.filter(producto => {
+            return producto.nombre.toLowerCase().includes(textoUsuario);
+        });
+        
+        // Redibujamos la pantalla con las cantidades y totales actualizados
+        renderizarTodo(productosFiltrados);
+    }
+}    
+    
     </script>
 </body>
 </html>
